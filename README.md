@@ -35,6 +35,7 @@ server := http.Server{
 		// Place any other arbitrary middleware here. Any handler that is passed
 		// as the final handler parameter will be wrapped by the full chain of
 		// middleware.
+		panicrecovery.PanicRecoveryMiddleware(),
 		timingMiddleware(),
 		slowValidationMiddleware(),
 	)(mux),

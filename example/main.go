@@ -9,6 +9,7 @@ import (
 	"time"
 
 	httpmiddlewareutils "github.com/niko-dunixi/httpmiddleware-utils"
+	"github.com/niko-dunixi/httpmiddleware-utils/panicrecovery"
 )
 
 func main() {
@@ -29,6 +30,7 @@ func main() {
 			// Place any other arbitrary middleware here. Any handler that is passed
 			// as the final handler parameter will be wrapped by the full chain of
 			// middleware.
+			panicrecovery.PanicRecoveryMiddleware(),
 			timingMiddleware(),
 			slowValidationMiddleware(),
 		)(mux),
