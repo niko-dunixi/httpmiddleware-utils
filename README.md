@@ -19,16 +19,14 @@ From [example/main.go](./example/main.go)
 // Define your REST paths, with any necessary complexity, as usual
 mux := http.NewServeMux()
 mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-	nowString := time.Now().Format(time.RFC3339)
-	w.Header().Set("Content-Type", "text/html")
-	html := fmt.Sprintf(
-		`<html>
-			<div>Hi Mom!</div>
-			<time datetime="%s">%s</time>
-		</html>`,
-		nowString, nowString,
-	)
-	w.Write([]byte(html))
+	w.Header().Set("Content-Type", "application/json")
+	responseMap := make(map[string]any)
+	responseMap["message"] = "Hi Mom!"
+	responseMap["time"] = time.Now()
+	if err := json.NewEncoder(w).Encode(responseMap); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("500 Internal Server Error"))
+	}
 })
 server := http.Server{
 	Handler: httpmiddlewareutils.Chain(
