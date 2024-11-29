@@ -15,6 +15,38 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
+func ExamplePanicRecoveryMiddleware() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		panic("a fatal error occurred")
+	})
+	middleware := PanicRecoveryMiddleware()
+	server := http.Server{
+		Handler: middleware(mux),
+	}
+	// error handling omitted for brevity
+	defer server.Close()
+	_ = server.ListenAndServe()
+}
+
+func ExamplePanicRecoveryMiddlewareFunc() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		panic("a fatal error occurred")
+	})
+	middleware := PanicRecoveryMiddlewareFunc(func(w http.ResponseWriter, r *http.Request, recoverValue any, stack []byte) {
+		log.Printf("something has broken: %s", recoverValue)
+	})
+	server := http.Server{
+		Handler: middleware(mux),
+	}
+	// error handling omitted for brevity
+	defer server.Close()
+	_ = server.ListenAndServe()
+	// Output:
+	// something has broken: a fatal error occurred
+}
+
 func TestPanicRecoveryMiddleware(t *testing.T) {
 	t.Run("business as usual", func(t *testing.T) {
 		// Setup

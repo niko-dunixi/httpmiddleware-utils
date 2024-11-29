@@ -11,6 +11,35 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+func ExampleChain() {
+	middlewareChain := Chain(
+		exampleTimingMiddleware(),
+	)
+	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hi Mom!"))
+	}))
+	server := http.Server{
+		Handler: middlewareChain(mux),
+	}
+	// error handling omitted for brevity
+	defer server.Close()
+	_ = server.ListenAndServe()
+}
+
+func exampleTimingMiddleware() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			defer func() {
+				end := time.Now()
+				log.Printf("request took %s time", end.Sub(start))
+			}()
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 func TestCombineMiddleware(t *testing.T) {
 	request, err := http.NewRequest("GET", "http://www.example.com", nil)
 	t.Run("empty middleware", func(t *testing.T) {
